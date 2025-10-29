@@ -51,13 +51,14 @@ export default function CandidatesPage() {
       <AdminSidebar />
 
       {/* Main content */}
-      <main className="flex-1 p-6 ml-64 transition-all">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">
+      <main className="flex-1 p-4 sm:p-6 md:p-8 md:ml-64 transition-all">
+        <h1 className="text-2xl font-bold mt-15 text-gray-800 dark:text-gray-100 mb-6">
           Candidates
         </h1>
 
         {error && <p className="text-red-600 mb-4">{error}</p>}
 
+        {/* Loading Skeleton */}
         {!candidates && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -66,32 +67,37 @@ export default function CandidatesPage() {
           </div>
         )}
 
+        {/* No Candidates */}
         {candidates && candidates.length === 0 && (
           <p className="text-gray-500">No candidates found.</p>
         )}
 
+        {/* Candidate Cards */}
         {candidates && candidates.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {candidates.map((c) => (
               <div
                 key={c._id ?? c.id}
-                className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow hover:shadow-lg transition-shadow"
+                className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow hover:shadow-lg transition-shadow flex flex-col"
               >
+                {/* Candidate Image */}
                 {c.image ? (
                   <img
                     src={c.image}
                     alt={c.name}
-                    className="w-full h-32 object-cover rounded-lg mb-4"
+                    className="w-full h-40 sm:h-32 md:h-36 object-cover rounded-lg mb-4"
                   />
                 ) : (
-                  <div className="w-full h-32 bg-gray-200 dark:bg-gray-700 rounded-lg mb-4 flex items-center justify-center text-gray-500">
+                  <div className="w-full h-40 sm:h-32 md:h-36 bg-gray-200 dark:bg-gray-700 rounded-lg mb-4 flex items-center justify-center text-gray-500">
                     No Image
                   </div>
                 )}
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+
+                {/* Candidate Info */}
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 truncate">
                   {c.name}
                 </h2>
-                <p className="text-gray-600 dark:text-gray-300">{c.position}</p>
+                <p className="text-gray-600 dark:text-gray-300 truncate">{c.position}</p>
                 <p className="mt-2 font-medium text-gray-700 dark:text-gray-200">
                   Votes: {c.votes}
                 </p>

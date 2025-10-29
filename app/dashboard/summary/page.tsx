@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @next/next/no-img-element */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/static-components */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -38,7 +37,6 @@ export default function VoteSummaryPage() {
       .then((data) => {
         if (cancelled) return;
         if (Array.isArray(data)) {
-          // Sort by votes descending
           const sorted = data.sort((a: Candidate, b: Candidate) => b.votes - a.votes);
           setCandidates(sorted);
         } else setCandidates([]);
@@ -56,21 +54,20 @@ export default function VoteSummaryPage() {
     };
   }, []);
 
-  // Assign colors for top 3
   const getBarColor = (index: number) => {
     switch (index) {
       case 0:
-        return '#FFD700'; // Gold
+        return '#FFD700';
       case 1:
-        return '#C0C0C0'; // Silver
+        return '#C0C0C0';
       case 2:
-        return '#CD7F32'; // Bronze
+        return '#CD7F32';
       default:
-        return '#3b82f6'; // Default blue
+        return '#3b82f6';
     }
   };
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length > 0) {
       const candidate = payload[0].payload as Candidate;
       return (
@@ -99,11 +96,14 @@ export default function VoteSummaryPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-      <AdminSidebar />
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Sidebar: hidden on mobile, toggleable if needed */}
+      <div className="md:block">
+        <AdminSidebar />
+      </div>
 
-      <main className="flex-1 p-6 ml-64 transition-all">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">
+      <main className="flex-1 p-4 md:p-6 transition-all">
+        <h1 className="text-2xl font-bold text-gray-800 mt-15 dark:text-gray-100 mb-6">
           Vote Summary
         </h1>
 
@@ -120,14 +120,14 @@ export default function VoteSummaryPage() {
         )}
 
         {candidates && candidates.length > 0 && (
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+          <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md w-full overflow-x-auto">
             <ResponsiveContainer width="100%" height={400}>
               <BarChart
                 data={candidates}
                 margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="name" stroke="#4b5563" />
+                <XAxis dataKey="name" stroke="#4b5563" interval={0} angle={-20} textAnchor="end" />
                 <YAxis stroke="#4b5563" />
                 <Tooltip content={<CustomTooltip />} />
                 <Bar dataKey="votes" animationDuration={800}>
