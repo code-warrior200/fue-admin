@@ -9,7 +9,7 @@ const addCandidate = async (candidate: { name: string; position: string; image?:
   formData.append('position', candidate.position);
   if (candidate.image) formData.append('image', candidate.image);
 
-  const res = await fetch('/api/candidates', {
+  const res = await fetch('/api/admin/add-candidate', {
     method: 'POST',
     body: formData, // multipart/form-data
   });

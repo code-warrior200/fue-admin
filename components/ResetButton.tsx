@@ -8,7 +8,7 @@ export default function ResetButton() {
   async function handleReset() {
     if (!confirm('Reset all votes to 0?')) return;
     try {
-      await apiFetch('/api/reset', { method: 'POST' });
+      await apiFetch('/api/admin/votes/reset', { method: 'POST' });
       // reload to reflect new counts
       location.reload();
     } catch (err: any) {

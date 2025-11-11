@@ -1,7 +1,7 @@
 // lib/api.ts
 'use client';
 
-const API_BASE = 'https://fue-vote-backend-1.onrender.com'; // 👈 Connected here
+const API_BASE = 'https://fue-vote-backend.onrender.com'; // 👈 Connected here
 export const TOKEN_KEY = 'fue_vote_token';
 
 // get/set/clear token helpers

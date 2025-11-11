@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { apiFetch } from '@/lib/api';
-import ResetButton from '@/components/ResetButton';
+//import ResetButton from '@/components/ResetButton';
 import { Award } from 'lucide-react';
 
 interface Candidate {
@@ -81,7 +81,7 @@ export default function SummaryTable() {
     <div className="bg-white p-6 rounded-xl shadow-md">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-lg font-semibold text-gray-800">Candidates Leaderboard</h3>
-        <ResetButton />
+        {/* <ResetButton /> */}
       </div>
       <table className="w-full table-auto border-collapse">
         <thead>

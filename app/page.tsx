@@ -20,7 +20,7 @@ export default function LoginPage() {
 
     try {
       const res = await fetch(
-        `https://fue-vote-backend-1.onrender.com/api/auth/admin-login`,
+        `https://fue-vote-backend.onrender.com/api/auth/admin-login`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
