@@ -1,57 +1,29 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// components/SummaryTable.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
-import { apiFetch } from '@/lib/api';
-//import ResetButton from '@/components/ResetButton';
+import { useCandidates } from '@/hooks/useCandidates';
 import { Award } from 'lucide-react';
-
-interface Candidate {
-  _id?: string;
-  id?: string;
-  name: string;
-  position: string;
-  votes: number;
-}
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function SummaryTable() {
-  const [rows, setRows] = useState<Candidate[] | null>(null);
-  const [err, setErr] = useState('');
+  const { candidates, error, loading } = useCandidates({ sortByVotes: true });
 
-  useEffect(() => {
-    let cancelled = false;
-    apiFetch('/api/candidates')
-      .then((data) => {
-        if (cancelled) return;
-        if (Array.isArray(data)) {
-          const sorted = data.sort((a: Candidate, b: Candidate) => b.votes - a.votes);
-          setRows(sorted);
-        } else {
-          setRows([]);
-        }
-      })
-      .catch((e: any) => {
-        console.error(e);
-        if (e.message === 'unauthorized') {
-          setErr('Unauthorized — redirecting to login...');
-          setTimeout(() => (location.href = '/'), 800);
-        } else setErr(e.message || 'Failed to load');
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  if (err) return <p className="text-red-600">{err}</p>;
-  if (rows === null)
+  if (error) {
     return (
-      <div className="p-4">
-        <p>Loading...</p>
+      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+        <p className="text-red-600 dark:text-red-400">{error}</p>
       </div>
     );
+  }
 
-  const getRankStyle = (rank: number) => {
+  if (loading) {
+    return (
+      <div className="p-4">
+        <Skeleton className="w-full h-64 rounded-lg" />
+      </div>
+    );
+  }
+
+  const getRankStyle = (rank: number): string => {
     switch (rank) {
       case 1:
         return 'text-yellow-500 font-bold';
@@ -60,7 +32,7 @@ export default function SummaryTable() {
       case 3:
         return 'text-orange-500 font-semibold';
       default:
-        return 'text-gray-700';
+        return 'text-gray-700 dark:text-gray-300';
     }
   };
 
@@ -77,48 +49,56 @@ export default function SummaryTable() {
     }
   };
 
-  return (
-    <div className="bg-white p-6 rounded-xl shadow-md">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-semibold text-gray-800">Candidates Leaderboard</h3>
-        {/* <ResetButton /> */}
+  if (!candidates || candidates.length === 0) {
+    return (
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
+        <p className="text-gray-500 dark:text-gray-400">No candidates yet</p>
       </div>
-      <table className="w-full table-auto border-collapse">
-        <thead>
-          <tr className="text-left border-b border-gray-200">
-            <th className="pb-3 px-2">#</th>
-            <th className="pb-3 px-2">Position</th>
-            <th className="pb-3 px-2">Candidate</th>
-            <th className="pb-3 px-2">Votes</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.length === 0 && (
-            <tr>
-              <td colSpan={4} className="py-4 text-center text-gray-500">
-                No candidates yet
-              </td>
+    );
+  }
+
+  return (
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+          Candidates Leaderboard
+        </h3>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full table-auto border-collapse">
+          <thead>
+            <tr className="text-left border-b border-gray-200 dark:border-gray-700">
+              <th className="pb-3 px-2 text-gray-700 dark:text-gray-300">Rank</th>
+              <th className="pb-3 px-2 text-gray-700 dark:text-gray-300">Position</th>
+              <th className="pb-3 px-2 text-gray-700 dark:text-gray-300">Candidate</th>
+              <th className="pb-3 px-2 text-gray-700 dark:text-gray-300">Total Votes</th>
             </tr>
-          )}
-          {rows.map((c, i) => {
-            const rank = i + 1;
-            return (
-              <tr
-                key={c._id ?? c.id ?? i}
-                className="border-t border-gray-100 hover:bg-gray-50 transition-colors"
-              >
-                <td className={`py-2 px-2 ${getRankStyle(rank)}`}>
-                  {rank}
-                  {getTrophy(rank)}
-                </td>
-                <td className="py-2 px-2 font-medium text-gray-700">{c.position}</td>
-                <td className="py-2 px-2">{c.name}</td>
-                <td className="py-2 px-2">{c.votes}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {candidates.map((candidate, index) => {
+              const rank = index + 1;
+              return (
+                <tr
+                  key={candidate._id ?? candidate.id ?? index}
+                  className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                >
+                  <td className={`py-3 px-2 ${getRankStyle(rank)}`}>
+                    {rank}
+                    {getTrophy(rank)}
+                  </td>
+                  <td className="py-3 px-2 font-medium text-gray-700 dark:text-gray-300">
+                    {candidate.position}
+                  </td>
+                  <td className="py-3 px-2 text-gray-800 dark:text-gray-200">{candidate.name}</td>
+                  <td className="py-3 px-2 font-semibold text-gray-800 dark:text-gray-200">
+                    {candidate.votes}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

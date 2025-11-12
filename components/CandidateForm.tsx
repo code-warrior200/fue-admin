@@ -1,30 +1,40 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useState } from 'react';
-
-const addCandidate = async (candidate: { name: string; position: string; image?: File }) => {
-  const formData = new FormData();
-  formData.append('name', candidate.name);
-  formData.append('position', candidate.position);
-  if (candidate.image) formData.append('image', candidate.image);
-
-  const res = await fetch('/api/admin/add-candidate', {
-    method: 'POST',
-    body: formData, // multipart/form-data
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Failed to add candidate: ${res.status} ${text}`);
-  }
-
-  return res.json();
-};
+import { getToken, API_BASE } from '@/lib/api';
 
 interface CandidateFormProps {
   onCandidateAdded?: () => void;
 }
+
+const addCandidate = async (candidate: { name: string; position: string; image?: File }) => {
+  const token = getToken();
+  if (!token) {
+    throw new Error('Not authenticated');
+  }
+
+  const formData = new FormData();
+  formData.append('name', candidate.name);
+  formData.append('position', candidate.position);
+  if (candidate.image) {
+    formData.append('image', candidate.image);
+  }
+
+  const res = await fetch(`${API_BASE}/api/admin/add-candidate`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error || `Failed to add candidate: ${res.statusText}`);
+  }
+
+  return res.json();
+};
 
 export default function CandidateForm({ onCandidateAdded }: CandidateFormProps) {
   const [name, setName] = useState('');
@@ -32,19 +42,30 @@ export default function CandidateForm({ onCandidateAdded }: CandidateFormProps) 
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
+    setSuccess(false);
+
     try {
       await addCandidate({ name, position, image: image ?? undefined });
       setName('');
       setPosition('');
       setImage(null);
       setPreview(null);
-      if (onCandidateAdded) onCandidateAdded();
+      setSuccess(true);
+      if (onCandidateAdded) {
+        onCandidateAdded();
+      }
+      setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to add candidate';
       console.error('Error adding candidate:', err);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -66,6 +87,21 @@ export default function CandidateForm({ onCandidateAdded }: CandidateFormProps) 
       <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-6">
         Add Candidate
       </h2>
+
+      {error && (
+        <div className="mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+          <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
+        </div>
+      )}
+
+      {success && (
+        <div className="mb-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+          <p className="text-green-600 dark:text-green-400 text-sm">
+            Candidate added successfully!
+          </p>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         {/* Name Input */}
         <div className="relative">
