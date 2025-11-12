@@ -1,7 +1,10 @@
 'use client';
 
+import { useEffect, useState, useRef } from 'react';
+import io from 'socket.io-client';
 import AdminSidebar from '@/components/AdminNav';
 import { useCandidates } from '@/hooks/useCandidates';
+import { apiFetch, API_BASE } from '@/lib/api';
 import {
   BarChart,
   Bar,
@@ -25,7 +28,111 @@ interface TooltipProps {
 }
 
 export default function VoteSummaryPage() {
-  const { candidates, error, loading } = useCandidates({ sortByVotes: true });
+  const { candidates: initialCandidates, error, loading, refetch } = useCandidates({ sortByVotes: true });
+  const [candidates, setCandidates] = useState<Candidate[] | null>(null);
+  const socketRef = useRef<ReturnType<typeof io> | null>(null);
+
+  // Initialize candidates from hook
+  useEffect(() => {
+    if (initialCandidates) {
+      setCandidates(initialCandidates);
+    }
+  }, [initialCandidates]);
+
+  // Socket.io setup and real-time updates
+  useEffect(() => {
+    // Call GET /api/vote/realtime endpoint
+    const fetchRealtimeData = async () => {
+      try {
+        await apiFetch('/api/vote/realtime');
+      } catch (err) {
+        console.error('Error fetching realtime data:', err);
+      }
+    };
+
+    // Initialize socket connection
+    const socket = io(API_BASE, {
+      transports: ['websocket', 'polling'],
+    });
+
+    socketRef.current = socket;
+
+    // Subscribe to vote counts
+    socket.emit('subscribe_vote_counts');
+
+    // Subscribe to specific candidates when they're available
+    socket.on('connect', () => {
+      console.log('Socket connected');
+      fetchRealtimeData();
+      
+      if (candidates && candidates.length > 0) {
+        const candidateIds = candidates.map(c => c._id || c.id).filter(Boolean) as string[];
+        if (candidateIds.length > 0) {
+          socket.emit('subscribe_vote_counts', { candidateIds });
+        }
+      }
+    });
+
+    // Listen for individual vote count updates
+    socket.on('vote_count_update', (data: { candidateId: string; voteCount: number }) => {
+      console.log(`Candidate ${data.candidateId} now has ${data.voteCount} votes`);
+      
+      setCandidates(prev => {
+        if (!prev) return prev;
+        return prev.map(candidate => {
+          const id = candidate._id || candidate.id;
+          if (id === data.candidateId) {
+            return { ...candidate, votes: data.voteCount };
+          }
+          return candidate;
+        }).sort((a, b) => b.votes - a.votes);
+      });
+    });
+
+    // Listen for bulk vote count updates
+    socket.on('vote_counts_bulk_update', (data: { updates: Array<{ candidateId: string; voteCount: number }> }) => {
+      console.log('Bulk update:', data.updates);
+      
+      setCandidates(prev => {
+        if (!prev) return prev;
+        const updateMap = new Map(data.updates.map(u => [u.candidateId, u.voteCount]));
+        return prev.map(candidate => {
+          const id = candidate._id || candidate.id;
+          if (id && updateMap.has(id)) {
+            return { ...candidate, votes: updateMap.get(id)! };
+          }
+          return candidate;
+        }).sort((a, b) => b.votes - a.votes);
+      });
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Socket disconnected');
+    });
+
+    socket.on('error', (err: Error) => {
+      console.error('Socket error:', err);
+    });
+
+    // Cleanup on unmount
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.emit('unsubscribe_vote_counts');
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    };
+  }, []); // Run once on mount
+
+  // Update socket subscription when candidates change
+  useEffect(() => {
+    if (socketRef.current?.connected && candidates && candidates.length > 0) {
+      const candidateIds = candidates.map(c => c._id || c.id).filter(Boolean) as string[];
+      if (candidateIds.length > 0) {
+        socketRef.current.emit('subscribe_vote_counts', { candidateIds });
+      }
+    }
+  }, [candidates]);
 
   const getBarColor = (index: number): string => {
     switch (index) {
