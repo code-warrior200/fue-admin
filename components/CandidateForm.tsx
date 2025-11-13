@@ -60,26 +60,26 @@ export default function CandidateForm({ onCandidateAdded }: CandidateFormProps) 
   };
 
   return (
-    <div className="max-w-md w-full mx-auto bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
-      <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-6">
+    <div className="max-w-md w-full mx-auto bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-lg">
+      <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-4 sm:mb-6">
         Add Candidate
       </h2>
 
       {error && (
-        <div className="mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
-          <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
+        <div className="mb-3 sm:mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-2 sm:p-3">
+          <p className="text-red-600 dark:text-red-400 text-xs sm:text-sm">{error}</p>
         </div>
       )}
 
       {success && (
-        <div className="mb-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
-          <p className="text-green-600 dark:text-green-400 text-sm">
+        <div className="mb-3 sm:mb-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-2 sm:p-3">
+          <p className="text-green-600 dark:text-green-400 text-xs sm:text-sm">
             Candidate added successfully!
           </p>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-5">
         {/* Name Input */}
         <div className="relative">
           <input
@@ -88,12 +88,12 @@ export default function CandidateForm({ onCandidateAdded }: CandidateFormProps) 
             placeholder=" "
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="peer w-full border border-gray-300 dark:border-gray-600 rounded-lg p-4 pt-5 text-gray-800 dark:text-gray-100 bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="peer w-full border border-gray-300 dark:border-gray-600 rounded-lg p-3 sm:p-4 pt-4 sm:pt-5 text-sm sm:text-base text-gray-800 dark:text-gray-100 bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           />
           <label
             htmlFor="name"
-            className="absolute left-4 top-3 text-gray-500 dark:text-gray-400 text-sm transition-all peer-placeholder-shown:top-5 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:top-3 peer-focus:text-sm peer-focus:text-blue-500"
+            className="absolute left-3 sm:left-4 top-2.5 sm:top-3 text-gray-500 dark:text-gray-400 text-xs sm:text-sm transition-all peer-placeholder-shown:top-4 sm:peer-placeholder-shown:top-5 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm sm:peer-placeholder-shown:text-base peer-focus:top-2.5 sm:peer-focus:top-3 peer-focus:text-xs sm:peer-focus:text-sm peer-focus:text-blue-500"
           >
             Candidate Name
           </label>
@@ -107,12 +107,12 @@ export default function CandidateForm({ onCandidateAdded }: CandidateFormProps) 
             placeholder=" "
             value={position}
             onChange={(e) => setPosition(e.target.value)}
-            className="peer w-full border border-gray-300 dark:border-gray-600 rounded-lg p-4 pt-5 text-gray-800 dark:text-gray-100 bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="peer w-full border border-gray-300 dark:border-gray-600 rounded-lg p-3 sm:p-4 pt-4 sm:pt-5 text-sm sm:text-base text-gray-800 dark:text-gray-100 bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           />
           <label
             htmlFor="position"
-            className="absolute left-4 top-3 text-gray-500 dark:text-gray-400 text-sm transition-all peer-placeholder-shown:top-5 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:top-3 peer-focus:text-sm peer-focus:text-blue-500"
+            className="absolute left-3 sm:left-4 top-2.5 sm:top-3 text-gray-500 dark:text-gray-400 text-xs sm:text-sm transition-all peer-placeholder-shown:top-4 sm:peer-placeholder-shown:top-5 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm sm:peer-placeholder-shown:text-base peer-focus:top-2.5 sm:peer-focus:top-3 peer-focus:text-xs sm:peer-focus:text-sm peer-focus:text-blue-500"
           >
             Position
           </label>
@@ -124,10 +124,10 @@ export default function CandidateForm({ onCandidateAdded }: CandidateFormProps) 
             <img
               src={preview}
               alt="Preview"
-              className="w-32 h-32 rounded-full object-cover mb-3 border border-gray-300 dark:border-gray-600"
+              className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover mb-3 border border-gray-300 dark:border-gray-600"
             />
           ) : (
-            <div className="w-32 h-32 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-3 border border-gray-300 dark:border-gray-600 text-gray-400">
+            <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-3 border border-gray-300 dark:border-gray-600 text-gray-400 text-xs sm:text-sm">
               Preview
             </div>
           )}
@@ -135,7 +135,7 @@ export default function CandidateForm({ onCandidateAdded }: CandidateFormProps) 
             type="file"
             accept="image/*"
             onChange={(e) => handleImageChange(e.target.files?.[0] ?? null)}
-            className="text-gray-700 dark:text-gray-200"
+            className="text-xs sm:text-sm text-gray-700 dark:text-gray-200 w-full max-w-xs"
           />
         </div>
 
@@ -143,7 +143,7 @@ export default function CandidateForm({ onCandidateAdded }: CandidateFormProps) 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50 flex justify-center items-center gap-2"
+          className="w-full bg-blue-600 text-white py-2.5 sm:py-3 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50 flex justify-center items-center gap-2 text-sm sm:text-base"
         >
           {loading ? (
             <>

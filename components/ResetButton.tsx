@@ -58,9 +58,24 @@ export default function ResetButton({ position, useAltEndpoint = false }: ResetB
     <button
       onClick={handleReset}
       disabled={loading}
-      className="px-3 py-1 border rounded bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      className="w-full sm:w-auto px-3 py-1.5 sm:py-1 text-sm sm:text-base border rounded bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
     >
-      {loading ? 'Resetting...' : position ? `Reset ${position} Votes` : 'Reset All Votes'}
+      {loading ? (
+        <span>
+          <span className="hidden sm:inline">Resetting...</span>
+          <span className="sm:hidden">Resetting</span>
+        </span>
+      ) : position ? (
+        <span>
+          <span className="hidden sm:inline">Reset {position} Votes</span>
+          <span className="sm:hidden">Reset {position}</span>
+        </span>
+      ) : (
+        <span>
+          <span className="hidden sm:inline">Reset All Votes</span>
+          <span className="sm:hidden">Reset All</span>
+        </span>
+      )}
     </button>
   );
 }

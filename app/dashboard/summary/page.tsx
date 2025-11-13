@@ -163,11 +163,11 @@ export default function VoteSummaryPage() {
   const getTrophy = (rank: number) => {
     switch (rank) {
       case 1:
-        return <Award className="w-4 h-4 text-yellow-500 inline-block ml-1" />;
+        return <Award className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500 inline-block ml-1" />;
       case 2:
-        return <Award className="w-4 h-4 text-gray-400 inline-block ml-1" />;
+        return <Award className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 inline-block ml-1" />;
       case 3:
-        return <Award className="w-4 h-4 text-orange-500 inline-block ml-1" />;
+        return <Award className="w-3 h-3 sm:w-4 sm:h-4 text-orange-500 inline-block ml-1" />;
       default:
         return null;
     }
@@ -177,22 +177,22 @@ export default function VoteSummaryPage() {
     if (active && payload && payload.length > 0) {
       const candidate = payload[0].payload;
       return (
-        <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 p-2 sm:p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
             {candidate.image ? (
               <img
                 src={candidate.image}
                 alt={candidate.name}
-                className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0"
               />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 text-xs sm:text-sm flex-shrink-0">
                 ?
               </div>
             )}
-            <div>
-              <p className="font-semibold text-gray-800 dark:text-gray-100">{candidate.name}</p>
-              <p className="text-gray-600 dark:text-gray-300">
+            <div className="min-w-0">
+              <p className="font-semibold text-xs sm:text-sm text-gray-800 dark:text-gray-100 truncate">{candidate.name}</p>
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
                 {candidate.position && `${candidate.position} • `}Votes: {candidate.votes}
               </p>
             </div>
@@ -211,13 +211,13 @@ export default function VoteSummaryPage() {
         <AdminSidebar />
       </div>
 
-      <main className="flex-1 p-4 md:p-6 transition-all">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+      <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 transition-all">
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
             Vote Summary
           </h1>
           {candidates && candidates.length > 0 && (
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
               Total Votes: <span className="font-semibold">{totalVotes}</span> •{' '}
               <span className="font-semibold">{candidates.length}</span> Candidates
             </p>
@@ -225,96 +225,110 @@ export default function VoteSummaryPage() {
         </div>
 
         {error && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-4">
-            <p className="text-red-600 dark:text-red-400">{error}</p>
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
+            <p className="text-xs sm:text-sm text-red-600 dark:text-red-400">{error}</p>
           </div>
         )}
 
         {loading && (
-          <div className="w-full h-80 flex items-center justify-center">
-            <Skeleton className="w-full h-80 rounded-lg" />
+          <div className="w-full h-64 sm:h-80 flex items-center justify-center">
+            <Skeleton className="w-full h-64 sm:h-80 rounded-lg" />
           </div>
         )}
 
         {!loading && candidates && candidates.length === 0 && (
-          <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md text-center">
-            <p className="text-gray-500 dark:text-gray-400">No candidates found.</p>
+          <div className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-xl shadow-md text-center">
+            <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">No candidates found.</p>
           </div>
         )}
 
         {!loading && candidates && candidates.length > 0 && (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Bar Chart */}
-            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md w-full overflow-x-auto">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">
+            <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 md:p-6 rounded-xl shadow-md w-full overflow-x-auto">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3 sm:mb-4">
                 Votes Distribution
               </h2>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart
-                  data={candidates}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis
-                    dataKey="name"
-                    stroke="#4b5563"
-                    interval={0}
-                    angle={-20}
-                    textAnchor="end"
-                    height={80}
-                  />
-                  <YAxis stroke="#4b5563" />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="votes" animationDuration={800} radius={[8, 8, 0, 0]}>
-                    {candidates.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={getBarColor(index)} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="w-full h-[300px] sm:h-[350px] md:h-[400px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={candidates}
+                    margin={{ 
+                      top: 10, 
+                      right: 10, 
+                      left: 0, 
+                      bottom: 40 
+                    }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis
+                      dataKey="name"
+                      stroke="#4b5563"
+                      interval={0}
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                      tick={{ fontSize: 10 }}
+                      className="sm:[&_.recharts-cartesian-axis-tick-text]:!text-xs"
+                    />
+                    <YAxis 
+                      stroke="#4b5563" 
+                      tick={{ fontSize: 10 }}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="votes" animationDuration={800} radius={[4, 4, 0, 0]}>
+                      {candidates.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={getBarColor(index)} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
 
             {/* Summary Table */}
-            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">
+            <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 md:p-6 rounded-xl shadow-md">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3 sm:mb-4">
                 Candidates Leaderboard
               </h2>
-              <div className="overflow-x-auto">
-                <table className="w-full table-auto border-collapse">
-                  <thead>
-                    <tr className="text-left border-b border-gray-200 dark:border-gray-700">
-                      <th className="pb-3 px-2 text-gray-700 dark:text-gray-300">Rank</th>
-                      <th className="pb-3 px-2 text-gray-700 dark:text-gray-300">Position</th>
-                      <th className="pb-3 px-2 text-gray-700 dark:text-gray-300">Candidate</th>
-                      <th className="pb-3 px-2 text-gray-700 dark:text-gray-300">Total Votes</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {candidates.map((candidate, index) => {
-                      const rank = index + 1;
-                      return (
-                        <tr
-                          key={candidate._id ?? candidate.id ?? index}
-                          className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                        >
-                          <td className={`py-3 px-2 ${getRankStyle(rank)}`}>
-                            {rank}
-                            {getTrophy(rank)}
-                          </td>
-                          <td className="py-3 px-2 font-medium text-gray-700 dark:text-gray-300">
-                            {candidate.position}
-                          </td>
-                          <td className="py-3 px-2 text-gray-800 dark:text-gray-200">
-                            {candidate.name}
-                          </td>
-                          <td className="py-3 px-2 font-semibold text-gray-800 dark:text-gray-200">
-                            {candidate.votes}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+              <div className="overflow-x-auto -mx-3 sm:mx-0">
+                <div className="inline-block min-w-full align-middle">
+                  <table className="min-w-full table-auto border-collapse">
+                    <thead>
+                      <tr className="text-left border-b border-gray-200 dark:border-gray-700">
+                        <th className="pb-2 sm:pb-3 px-2 sm:px-3 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Rank</th>
+                        <th className="pb-2 sm:pb-3 px-2 sm:px-3 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Position</th>
+                        <th className="pb-2 sm:pb-3 px-2 sm:px-3 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Candidate</th>
+                        <th className="pb-2 sm:pb-3 px-2 sm:px-3 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Total Votes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {candidates.map((candidate, index) => {
+                        const rank = index + 1;
+                        return (
+                          <tr
+                            key={candidate._id ?? candidate.id ?? index}
+                            className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                          >
+                            <td className={`py-2 sm:py-3 px-2 sm:px-3 text-xs sm:text-sm ${getRankStyle(rank)}`}>
+                              {rank}
+                              {getTrophy(rank)}
+                            </td>
+                            <td className="py-2 sm:py-3 px-2 sm:px-3 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
+                              <span className="truncate block max-w-[120px] sm:max-w-none">{candidate.position}</span>
+                            </td>
+                            <td className="py-2 sm:py-3 px-2 sm:px-3 text-xs sm:text-sm text-gray-800 dark:text-gray-200">
+                              <span className="truncate block max-w-[150px] sm:max-w-none">{candidate.name}</span>
+                            </td>
+                            <td className="py-2 sm:py-3 px-2 sm:px-3 text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200 whitespace-nowrap">
+                              {candidate.votes}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
