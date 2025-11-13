@@ -5,7 +5,11 @@ import { useCandidates } from '@/hooks/useCandidates';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function CandidatesPage() {
-  const { candidates, error, loading } = useCandidates({ sortByVotes: false });
+  // Use all-candidates endpoint for full admin details
+  const { candidates, error, loading } = useCandidates({ 
+    sortByVotes: false,
+    useFullDetails: true 
+  });
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
