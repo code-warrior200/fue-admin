@@ -2,28 +2,65 @@
 // components/ResetButton.tsx
 'use client';
 
-import { apiFetch } from '@/lib/api';
+import { useState } from 'react';
+import { resetAllVotes, resetAllVotesAlt, resetVotesByPosition, resetVotesByPositionAlt } from '@/lib/api';
 
-export default function ResetButton() {
+interface ResetButtonProps {
+  position?: string; // If provided, reset votes for this position only. Otherwise, reset all votes.
+  useAltEndpoint?: boolean; // Use alternative endpoints
+}
+
+export default function ResetButton({ position, useAltEndpoint = false }: ResetButtonProps) {
+  const [loading, setLoading] = useState(false);
+
   async function handleReset() {
-    if (!confirm('Reset all votes to 0?')) return;
+    const message = position
+      ? `Reset all votes for position "${position}" to 0?`
+      : 'Reset all votes in the system to 0?';
+    
+    if (!confirm(message)) return;
+    
+    setLoading(true);
     try {
-      await apiFetch('/api/admin/votes/reset', { method: 'POST' });
+      if (position) {
+        // Reset votes for a specific position
+        if (useAltEndpoint) {
+          await resetVotesByPositionAlt(position);
+        } else {
+          await resetVotesByPosition(position);
+        }
+      } else {
+        // Reset all votes
+        if (useAltEndpoint) {
+          await resetAllVotesAlt();
+        } else {
+          await resetAllVotes();
+        }
+      }
       // reload to reflect new counts
       location.reload();
     } catch (err: any) {
-      if (err.message === 'unauthorized') {
+      const errorMsg = err.message || 'Unknown error';
+      if (errorMsg.toLowerCase().includes('unauthorized') || 
+          errorMsg.toLowerCase().includes('401') ||
+          errorMsg.toLowerCase().includes('403')) {
         alert('Unauthorized — please login again');
         location.href = '/';
       } else {
-        alert('Failed to reset: ' + (err.message || 'Unknown error'));
+        alert('Failed to reset: ' + errorMsg);
       }
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
-    <button onClick={handleReset} className="px-3 py-1 border rounded bg-red-50">
-      Reset All Votes
+    <button
+      onClick={handleReset}
+      disabled={loading}
+      className="px-3 py-1 border rounded bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {loading ? 'Resetting...' : position ? `Reset ${position} Votes` : 'Reset All Votes'}
     </button>
   );
 }

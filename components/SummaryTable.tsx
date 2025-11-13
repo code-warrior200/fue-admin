@@ -1,21 +1,74 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useCandidates } from '@/hooks/useCandidates';
+import { getVoteSummary, getVoteSummaryAlt } from '@/lib/api';
 import { Award } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { Candidate } from '@/types';
 
-export default function SummaryTable() {
+interface SummaryTableProps {
+  useVoteSummary?: boolean; // Use vote-summary endpoints instead of candidates
+  category?: string; // Category filter for vote-summary
+  useAltEndpoint?: boolean; // Use alternative vote-summary endpoint
+}
+
+export default function SummaryTable({ 
+  useVoteSummary = false, 
+  category,
+  useAltEndpoint = false 
+}: SummaryTableProps) {
   const { candidates, error, loading } = useCandidates({ sortByVotes: true });
+  const [voteSummaryData, setVoteSummaryData] = useState<Candidate[] | null>(null);
+  const [voteSummaryLoading, setVoteSummaryLoading] = useState(false);
+  const [voteSummaryError, setVoteSummaryError] = useState<string | null>(null);
 
-  if (error) {
+  // Fetch vote summary if enabled
+  useEffect(() => {
+    if (useVoteSummary) {
+      const fetchVoteSummary = async () => {
+        setVoteSummaryLoading(true);
+        setVoteSummaryError(null);
+        try {
+          const data = useAltEndpoint 
+            ? await getVoteSummaryAlt(category)
+            : await getVoteSummary(category);
+          
+          // Handle different response formats
+          if (Array.isArray(data)) {
+            setVoteSummaryData(data);
+          } else if (data.candidates && Array.isArray(data.candidates)) {
+            setVoteSummaryData(data.candidates);
+          } else if (data.summary && Array.isArray(data.summary)) {
+            setVoteSummaryData(data.summary);
+          } else {
+            setVoteSummaryData([]);
+          }
+        } catch (err) {
+          const errorMsg = err instanceof Error ? err.message : 'Failed to load vote summary';
+          setVoteSummaryError(errorMsg);
+        } finally {
+          setVoteSummaryLoading(false);
+        }
+      };
+      fetchVoteSummary();
+    }
+  }, [useVoteSummary, category, useAltEndpoint]);
+
+  // Use vote summary data if enabled, otherwise use candidates
+  const displayCandidates = useVoteSummary ? voteSummaryData : candidates;
+  const displayError = useVoteSummary ? voteSummaryError : error;
+  const displayLoading = useVoteSummary ? voteSummaryLoading : loading;
+
+  if (displayError) {
     return (
       <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-        <p className="text-red-600 dark:text-red-400">{error}</p>
+        <p className="text-red-600 dark:text-red-400">{displayError}</p>
       </div>
     );
   }
 
-  if (loading) {
+  if (displayLoading) {
     return (
       <div className="p-4">
         <Skeleton className="w-full h-64 rounded-lg" />
@@ -49,7 +102,7 @@ export default function SummaryTable() {
     }
   };
 
-  if (!candidates || candidates.length === 0) {
+  if (!displayCandidates || displayCandidates.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
         <p className="text-gray-500 dark:text-gray-400">No candidates yet</p>
@@ -75,7 +128,7 @@ export default function SummaryTable() {
             </tr>
           </thead>
           <tbody>
-            {candidates.map((candidate, index) => {
+            {displayCandidates.map((candidate, index) => {
               const rank = index + 1;
               return (
                 <tr

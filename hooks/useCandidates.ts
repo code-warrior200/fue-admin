@@ -3,12 +3,13 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiFetch } from '@/lib/api';
+import { getAllCandidates, getAllCandidatesFull } from '@/lib/api';
 import type { Candidate } from '@/types';
 
 interface UseCandidatesOptions {
   sortByVotes?: boolean;
   autoRedirect?: boolean;
+  useFullDetails?: boolean; // Use /api/admin/all-candidates instead of /api/admin/candidates
 }
 
 interface UseCandidatesReturn {
@@ -19,7 +20,7 @@ interface UseCandidatesReturn {
 }
 
 export function useCandidates(
-  options: UseCandidatesOptions = { sortByVotes: false, autoRedirect: true }
+  options: UseCandidatesOptions = { sortByVotes: false, autoRedirect: true, useFullDetails: false }
 ): UseCandidatesReturn {
   const [candidates, setCandidates] = useState<Candidate[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +32,10 @@ export function useCandidates(
     setError(null);
 
     try {
-      const data = await apiFetch('/api/candidates');
+      // Use all-candidates endpoint for admin with full details, or regular candidates endpoint
+      const data = options.useFullDetails 
+        ? await getAllCandidatesFull()
+        : await getAllCandidates();
       
       if (Array.isArray(data)) {
         let processed = data;
@@ -46,7 +50,11 @@ export function useCandidates(
       const errorMessage = err instanceof Error ? err.message : 'Failed to load candidates';
       console.error('Error fetching candidates:', err);
       
-      if (errorMessage === 'unauthorized' && options.autoRedirect) {
+      // Check for unauthorized errors
+      if ((errorMessage.toLowerCase().includes('unauthorized') || 
+           errorMessage.toLowerCase().includes('401') ||
+           errorMessage.toLowerCase().includes('403')) && 
+          options.autoRedirect) {
         setError('Unauthorized — redirecting to login...');
         setTimeout(() => router.push('/'), 800);
       } else {

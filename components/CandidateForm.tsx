@@ -1,40 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { getToken, API_BASE } from '@/lib/api';
+import { createCandidate, createCandidateAlt } from '@/lib/api';
 
 interface CandidateFormProps {
   onCandidateAdded?: () => void;
 }
-
-const addCandidate = async (candidate: { name: string; position: string; image?: File }) => {
-  const token = getToken();
-  if (!token) {
-    throw new Error('Not authenticated');
-  }
-
-  const formData = new FormData();
-  formData.append('name', candidate.name);
-  formData.append('position', candidate.position);
-  if (candidate.image) {
-    formData.append('image', candidate.image);
-  }
-
-  const res = await fetch(`${API_BASE}/api/admin/add-candidate`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    body: formData,
-  });
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body?.error || `Failed to add candidate: ${res.statusText}`);
-  }
-
-  return res.json();
-};
 
 export default function CandidateForm({ onCandidateAdded }: CandidateFormProps) {
   const [name, setName] = useState('');
@@ -52,7 +23,13 @@ export default function CandidateForm({ onCandidateAdded }: CandidateFormProps) 
     setSuccess(false);
 
     try {
-      await addCandidate({ name, position, image: image ?? undefined });
+      // Try primary endpoint first, fallback to alternative
+      try {
+        await createCandidate({ name, position, image: image ?? undefined });
+      } catch (primaryError) {
+        // If primary endpoint fails, try alternative endpoint
+        await createCandidateAlt({ name, position, image: image ?? undefined });
+      }
       setName('');
       setPosition('');
       setImage(null);

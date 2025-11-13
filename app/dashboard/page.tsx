@@ -10,6 +10,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import AdminNav from '@/components/AdminNav';
 import CandidateForm from '@/components/CandidateForm';
 import SummaryTable from '@/components/SummaryTable';
+import VoteVerification from '@/components/VoteVerification';
+import ResetButton from '@/components/ResetButton';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -68,17 +70,27 @@ export default function DashboardPage() {
           </Card>
         </motion.div>
 
-        {/* Summary Section */}
+        {/* Vote Verification Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <VoteVerification />
+        </motion.div>
+
+        {/* Summary Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
         >
           <Card className="shadow-md">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                 Vote Summary
               </CardTitle>
+              <ResetButton />
             </CardHeader>
             <CardContent>
               <SummaryTable />
