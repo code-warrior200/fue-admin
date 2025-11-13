@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import io from 'socket.io-client';
 import AdminSidebar from '@/components/AdminNav';
 import { useCandidates } from '@/hooks/useCandidates';
-import { apiFetch, API_BASE } from '@/lib/api';
+import { getVoteRealtime, API_BASE } from '@/lib/api';
 import {
   BarChart,
   Bar,
@@ -41,10 +41,56 @@ export default function VoteSummaryPage() {
 
   // Socket.io setup and real-time updates
   useEffect(() => {
-    // Call GET /api/vote/realtime endpoint
+    // Call GET /api/vote/realtime endpoint to get total votes of each candidate in realtime
     const fetchRealtimeData = async () => {
       try {
-        await apiFetch('/api/vote/realtime');
+        const data = await getVoteRealtime();
+        
+        // Update candidates with real-time vote counts
+        if (data) {
+          setCandidates(prev => {
+            if (!prev) return prev;
+            
+            // Handle different response formats
+            let voteUpdates: Array<{ candidateId: string; voteCount: number }> = [];
+            
+            if (Array.isArray(data)) {
+              // If response is an array of vote updates
+              voteUpdates = data;
+            } else if (data.candidates && Array.isArray(data.candidates)) {
+              // If response has candidates array with votes
+              voteUpdates = data.candidates.map((c: Candidate) => ({
+                candidateId: c._id || c.id || '',
+                voteCount: c.votes || 0,
+              }));
+            } else if (data.votes && Array.isArray(data.votes)) {
+              // If response has votes array
+              voteUpdates = data.votes;
+            } else if (data.updates && Array.isArray(data.updates)) {
+              // If response has updates array
+              voteUpdates = data.updates;
+            } else if (typeof data === 'object') {
+              // If response is an object with candidate IDs as keys
+              voteUpdates = Object.entries(data).map(([id, votes]) => ({
+                candidateId: id,
+                voteCount: typeof votes === 'number' ? votes : 0,
+              }));
+            }
+            
+            // Update candidates with new vote counts
+            const updateMap = new Map(
+              voteUpdates.map(u => [u.candidateId, u.voteCount])
+            );
+            
+            return prev.map(candidate => {
+              const id = candidate._id || candidate.id;
+              if (id && updateMap.has(id)) {
+                return { ...candidate, votes: updateMap.get(id)! };
+              }
+              return candidate;
+            }).sort((a, b) => b.votes - a.votes);
+          });
+        }
       } catch (err) {
         console.error('Error fetching realtime data:', err);
       }
@@ -63,6 +109,7 @@ export default function VoteSummaryPage() {
     // Subscribe to specific candidates when they're available
     socket.on('connect', () => {
       console.log('Socket connected');
+      // Fetch real-time vote data when socket connects
       fetchRealtimeData();
       
       if (candidates && candidates.length > 0) {
@@ -72,6 +119,13 @@ export default function VoteSummaryPage() {
         }
       }
     });
+
+    // Set up periodic polling to fetch real-time votes (fallback if socket fails)
+    const pollingInterval = setInterval(() => {
+      if (socket.connected) {
+        fetchRealtimeData();
+      }
+    }, 5000); // Poll every 5 seconds
 
     // Listen for individual vote count updates
     socket.on('vote_count_update', (data: { candidateId: string; voteCount: number }) => {
@@ -116,6 +170,7 @@ export default function VoteSummaryPage() {
 
     // Cleanup on unmount
     return () => {
+      clearInterval(pollingInterval);
       if (socketRef.current) {
         socketRef.current.emit('unsubscribe_vote_counts');
         socketRef.current.disconnect();
@@ -205,6 +260,23 @@ export default function VoteSummaryPage() {
 
   const totalVotes = candidates?.reduce((sum, candidate) => sum + candidate.votes, 0) || 0;
 
+  // Group candidates by position
+  const groupedByPosition = candidates?.reduce((acc, candidate) => {
+    const position = candidate.position || 'Unknown';
+    if (!acc[position]) {
+      acc[position] = [];
+    }
+    acc[position].push(candidate);
+    return acc;
+  }, {} as Record<string, Candidate[]>) || {};
+
+  // Sort positions by total votes (descending)
+  const sortedPositions = Object.entries(groupedByPosition).sort(([, a], [, b]) => {
+    const totalA = a.reduce((sum, c) => sum + c.votes, 0);
+    const totalB = b.reduce((sum, c) => sum + c.votes, 0);
+    return totalB - totalA;
+  });
+
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="md:block">
@@ -219,7 +291,8 @@ export default function VoteSummaryPage() {
           {candidates && candidates.length > 0 && (
             <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
               Total Votes: <span className="font-semibold">{totalVotes}</span> •{' '}
-              <span className="font-semibold">{candidates.length}</span> Candidates
+              <span className="font-semibold">{candidates.length}</span> Candidates •{' '}
+              <span className="font-semibold">{sortedPositions.length}</span> Positions
             </p>
           )}
         </div>
@@ -244,47 +317,64 @@ export default function VoteSummaryPage() {
 
         {!loading && candidates && candidates.length > 0 && (
           <div className="space-y-4 sm:space-y-6">
-            {/* Bar Chart */}
-            <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 md:p-6 rounded-xl shadow-md w-full overflow-x-auto">
-              <h2 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3 sm:mb-4">
-                Votes Distribution
-              </h2>
-              <div className="w-full h-[300px] sm:h-[350px] md:h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={candidates}
-                    margin={{ 
-                      top: 10, 
-                      right: 10, 
-                      left: 0, 
-                      bottom: 40 
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis
-                      dataKey="name"
-                      stroke="#4b5563"
-                      interval={0}
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                      tick={{ fontSize: 10 }}
-                      className="sm:[&_.recharts-cartesian-axis-tick-text]:!text-xs"
-                    />
-                    <YAxis 
-                      stroke="#4b5563" 
-                      tick={{ fontSize: 10 }}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="votes" animationDuration={800} radius={[4, 4, 0, 0]}>
-                      {candidates.map((_, index) => (
-                        <Cell key={`cell-${index}`} fill={getBarColor(index)} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+            {/* Bar Charts Grouped by Position */}
+            {sortedPositions.map(([position, positionCandidates]) => {
+              const positionTotalVotes = positionCandidates.reduce((sum, c) => sum + c.votes, 0);
+              // Sort candidates within position by votes (descending)
+              const sortedCandidates = [...positionCandidates].sort((a, b) => b.votes - a.votes);
+              
+              return (
+                <div
+                  key={position}
+                  className="bg-white dark:bg-gray-800 p-3 sm:p-4 md:p-6 rounded-xl shadow-md w-full overflow-x-auto"
+                >
+                  <div className="mb-3 sm:mb-4">
+                    <h2 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100">
+                      {position}
+                    </h2>
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      {sortedCandidates.length} {sortedCandidates.length === 1 ? 'Candidate' : 'Candidates'} •{' '}
+                      Total Votes: <span className="font-semibold">{positionTotalVotes}</span>
+                    </p>
+                  </div>
+                  <div className="w-full h-[300px] sm:h-[350px] md:h-[400px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={sortedCandidates}
+                        margin={{ 
+                          top: 10, 
+                          right: 10, 
+                          left: 0, 
+                          bottom: 40 
+                        }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <XAxis
+                          dataKey="name"
+                          stroke="#4b5563"
+                          interval={0}
+                          angle={-45}
+                          textAnchor="end"
+                          height={80}
+                          tick={{ fontSize: 10 }}
+                          className="sm:[&_.recharts-cartesian-axis-tick-text]:!text-xs"
+                        />
+                        <YAxis 
+                          stroke="#4b5563" 
+                          tick={{ fontSize: 10 }}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Bar dataKey="votes" animationDuration={800} radius={[4, 4, 0, 0]}>
+                          {sortedCandidates.map((_, index) => (
+                            <Cell key={`cell-${index}`} fill={getBarColor(index)} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              );
+            })}
 
             {/* Summary Table */}
             <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 md:p-6 rounded-xl shadow-md">

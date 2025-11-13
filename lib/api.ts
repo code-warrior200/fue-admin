@@ -138,3 +138,8 @@ export async function resetAllVotesAlt(): Promise<any> {
 export async function verifyVotes(): Promise<any> {
   return apiFetch('/api/admin/votes/verify', { method: 'POST' });
 }
+
+// GET /api/vote/realtime - Get total votes of each candidate in realtime
+export async function getVoteRealtime(): Promise<any> {
+  return apiFetch('/api/vote/realtime', { method: 'GET' });
+}
