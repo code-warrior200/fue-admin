@@ -1,5 +1,9 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { motion } from 'framer-motion';
+import CandidateForm from '@/components/CandidateForm';
 import AdminSidebar from '@/components/AdminNav';
 import { useCandidates } from '@/hooks/useCandidates';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -16,6 +20,25 @@ export default function CandidatesPage() {
       <AdminSidebar />
 
       <main className="flex-1 p-4 sm:p-6 md:p-8 md:ml-64 transition-all">
+
+        {/* Candidate Form Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <Card className="shadow-md">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-200">
+                Add New Candidate
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">
+              <CandidateForm />
+            </CardContent>
+          </Card>
+        </motion.div>
+
         <h1 className="text-2xl font-bold mt-15 text-gray-800 dark:text-gray-100 mb-6">
           Candidates
         </h1>

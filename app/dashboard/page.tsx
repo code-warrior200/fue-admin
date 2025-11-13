@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import AdminNav from '@/components/AdminNav';
-import CandidateForm from '@/components/CandidateForm';
+
 import SummaryTable from '@/components/SummaryTable';
 import VoteVerification from '@/components/VoteVerification';
 import ResetButton from '@/components/ResetButton';
@@ -54,23 +54,7 @@ export default function DashboardPage() {
 
       {/* Dashboard Container */}
       <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 lg:py-10 space-y-4 sm:space-y-6 md:space-y-8">
-        {/* Candidate Form Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          <Card className="shadow-md">
-            <CardHeader className="p-4 sm:p-6">
-              <CardTitle className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-200">
-                Add New Candidate
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              <CandidateForm />
-            </CardContent>
-          </Card>
-        </motion.div>
+        
 
         {/* Vote Verification Section */}
         <motion.div
